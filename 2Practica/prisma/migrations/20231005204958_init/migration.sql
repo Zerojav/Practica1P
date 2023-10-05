@@ -1,19 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the `OptionsModel` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `UserModel` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "OptionsModel" DROP CONSTRAINT "OptionsModel_userId_fkey";
-
--- DropTable
-DROP TABLE "OptionsModel";
-
--- DropTable
-DROP TABLE "UserModel";
-
 -- CreateTable
 CREATE TABLE "Cliente" (
     "id" SERIAL NOT NULL,

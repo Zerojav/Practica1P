@@ -59,5 +59,5 @@ const EliminarPedido = async () =>{
 }
 
 (async () =>{
-    await LeerPedido
+    await crearPedido
 })
