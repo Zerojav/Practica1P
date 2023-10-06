@@ -1,9 +1,8 @@
 import { PrismaClient } from '@prisma/client';
-import { create } from 'domain'; 
 
 const prisma = new PrismaClient();
 
-const crearPedido = async () => {
+const crearPedido = async () => { //Create
     const PedidoCreado = await prisma.pedido.create({
         data:{
             cliente:{
@@ -26,7 +25,7 @@ const crearPedido = async () => {
     console.log(PedidoCreado)
 }
 
-const leerPedido = async () =>{
+const leerPedido = async () =>{ // Read
     const pedido = await prisma.pedido.findMany({
         include:{
             cliente:true,
@@ -39,7 +38,7 @@ const leerPedido = async () =>{
     console.log(pedido)
 }
 
-const actualizarPedido = async () =>{
+const actualizarPedido = async () =>{ // Update
     const pedido= await prisma.pedido.update({
         data:{
             fechaPedido: new Date("2004-11-21")
@@ -48,31 +47,32 @@ const actualizarPedido = async () =>{
             numPedido: 1
         }
     });
+    console.log("El pedido ha sido actualizado")
 }
 
-const eliminarPedido = async () =>{
+const eliminarPedido = async () =>{ //delete
     const pedido = await prisma.pedido.delete({
         where:{
-            numPedido:2
+            numPedido:1
         }
     });
 
     const cliente = await prisma.cliente.delete({
         where:{
-            id:2
+            id:1
         }
     });
 
     const repartidor = await prisma.repartidor.delete({
         where:{
-            id:4
+            id:1
         }
     });
     console.log("Se ha eliminado el pedido")
 }
 
-(async ()=>{
-    //await crearPedido()
+(async ()=>{ // Panel de opciones
+    await crearPedido()
     //await leerPedido()
     //await actualizarPedido()
     //await eliminarPedido()
