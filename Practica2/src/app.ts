@@ -26,7 +26,7 @@ const crearPedido = async () => {
     console.log(PedidoCreado)
 }
 
-const LeerPedido = async () =>{
+const leerPedido = async () =>{
     const pedido = await prisma.pedido.findMany({
         include:{
             cliente:true,
@@ -39,7 +39,7 @@ const LeerPedido = async () =>{
     console.log(pedido)
 }
 
-const ActualizarPedido = async () =>{
+const actualizarPedido = async () =>{
     const pedido= await prisma.pedido.update({
         data:{
             fechaPedido: new Date("2004-11-21")
@@ -50,14 +50,30 @@ const ActualizarPedido = async () =>{
     });
 }
 
-const EliminarPedido = async () =>{
+const eliminarPedido = async () =>{
     const pedido = await prisma.pedido.delete({
         where:{
-            numPedido:1
+            numPedido:2
         }
     });
+
+    const cliente = await prisma.cliente.delete({
+        where:{
+            id:2
+        }
+    });
+
+    const repartidor = await prisma.repartidor.delete({
+        where:{
+            id:4
+        }
+    });
+    console.log("Se ha eliminado el pedido")
 }
 
-(async () =>{
-    await crearPedido
-})
+(async ()=>{
+    //await crearPedido()
+    //await leerPedido()
+    //await actualizarPedido()
+    //await eliminarPedido()
+})()
