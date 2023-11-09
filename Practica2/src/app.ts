@@ -72,8 +72,8 @@ const eliminarPedido = async () =>{ //delete
 }
 
 (async ()=>{ // Panel de opciones
-    await crearPedido()
-    //await leerPedido()
+    //await crearPedido()
+    await leerPedido()
     //await actualizarPedido()
     //await eliminarPedido()
 })()
