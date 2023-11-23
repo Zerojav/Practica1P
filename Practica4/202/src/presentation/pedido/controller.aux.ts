@@ -1,28 +1,28 @@
 // DDD
 import { Request, Response } from 'express';
-import { CreateVehicleDto, UpdateVehicleDto } from '../../domain/dtos';
-import { VehicleRepository } from '../../domain';
+import { CreatePedidoDto, UpdatePedidoDto } from '../../domain/dtos';
+import { PedidoRepository } from '../../domain';
 
 
-export class VehiclesController {
+export class PedidosController {
 
   //* DI
   constructor(
-    private readonly vehicleRepository: VehicleRepository,
+    private readonly pedidoRepository: PedidoRepository,
   ) { }
 
 
-  public getVehicles = async ( req: Request, res: Response ) => {
-    const vehicles = await this.vehicleRepository.getAll();
-    return res.json( vehicles );
+  public getPedidos = async ( req: Request, res: Response ) => {
+    const pedidos = await this.pedidoRepository.getAll();
+    return res.json( pedidos );
   };
 
-  public getVehicleById = async ( req: Request, res: Response ) => {
+  public getPedidoById = async ( req: Request, res: Response ) => {
     const id = +req.params.id;
 
     try {
-      const vehicle = await this.vehicleRepository.findById( id );
-      res.json( vehicle );
+      const pedido = await this.pedidoRepository.findById( id );
+      res.json( pedido );
 
     } catch ( error ) {
       res.status( 400 ).json( { error } );
@@ -30,30 +30,30 @@ export class VehiclesController {
 
   };
 
-  public createVehicle = async ( req: Request, res: Response ) => {
-    const [ error, createVehicleDto ] = CreateVehicleDto.create( req.body );
+  public createPedido = async ( req: Request, res: Response ) => {
+    const [ error, createPedidoDto ] = CreatePedidoDto.create( req.body );
     if ( error ) return res.status( 400 ).json( { error } );
 
-    const vehicle = await this.vehicleRepository.create( createVehicleDto! );
-    res.json( vehicle );
+    const pedido = await this.pedidoRepository.create( createPedidoDto! );
+    res.json( pedido );
 
   };
 
-  public updateVehicle = async ( req: Request, res: Response ) => {
+  public updatePedido = async ( req: Request, res: Response ) => {
     const id = +req.params.id;
-    const [ error, updateVehicleDto ] = UpdateVehicleDto.create( { ...req.body, id } );
+    const [ error, updatePedidoDto ] = UpdatePedidoDto.create( { ...req.body, id } );
     if ( error ) return res.status( 400 ).json( { error } );
 
-    const updatedVehicle = await this.vehicleRepository.updateById( updateVehicleDto! );
-    return res.json( updatedVehicle );
+    const updatedPedido = await this.pedidoRepository.updateById( updatePedidoDto! );
+    return res.json( updatedPedido );
 
   };
 
 
-  public deleteVehicle = async ( req: Request, res: Response ) => {
+  public deletePedido = async ( req: Request, res: Response ) => {
     const id = +req.params.id;
-    const deletedVehicle = await this.vehicleRepository.deleteById( id );
-    res.json( deletedVehicle );
+    const deletedPedido = await this.pedidoRepository.deleteById( id );
+    res.json( deletedPedido );
 
   };
 
