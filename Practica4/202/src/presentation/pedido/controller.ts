@@ -1,90 +1,70 @@
 import { Request, Response } from 'express';
-import { prisma } from '../../data/postgres';
 import { CreatePedidoDto, UpdatePedidoDto } from '../../domain/dtos';
+import { CreatePedido, DeletePedido, GetPedido, GetPedidos, PedidoRepository, UpdatePedido } from '../../domain';
 
-export class PedidoController {
 
-    constructor(){}
+export class PedidosController {
 
-    public getPedido = async (req: Request, res: Response) => {
-        const pedido = await prisma.pedido.findMany();
-        return res.json(pedido);
-    };
+  //* DI
+  constructor(
+    private readonly pedidoRepository: PedidoRepository,
+  ) { }
 
-    public createPedido = async (req: Request, res: Response) => {
-        const createPedidoDto = CreatePedidoDto.create(req.body);
 
-        if (createPedidoDto instanceof Error) {
-            return res.status(400).json({ error: createPedidoDto.message });
-        }
+  public getPedidos = ( req: Request, res: Response ) => {
 
-        const pedido = await prisma.pedido.create({
-            data: createPedidoDto,
-        });
+    new GetPedidos( this.pedidoRepository )
+      .execute()
+      .then( pedidos => res.json( pedidos ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-        res.json(pedido);
-    };
+  };
 
-    public getPedidoById = async (req: Request, res: Response) => {
-        const id = +req.params.id;
+  public getPedidoById = ( req: Request, res: Response ) => {
+    const id = +req.params.id;
 
-        if(isNaN(id)) {
-            return res.status(400).json({ error: 'El argumento ID no es un número.'})
-        }
+    new GetPedido( this.pedidoRepository )
+      .execute( id )
+      .then( pedido => res.json( pedido ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-        const pedido = await prisma.pedido.findFirst({
-            where: { id }
-        });
+  };
 
-        if (pedido) {
-            res.json(pedido);
-        } else {
-            res.status(400).json({ error: `El pedido con la id ${id} no ha sido encontrado.` })
-        }
-    };
+  public createPedido = ( req: Request, res: Response ) => {
+    const [ error, createPedidoDto ] = CreatePedidoDto.create( req.body );
+    if ( error ) return res.status( 400 ).json( { error } );
 
-    public updatePedido = async (req:Request, res: Response) => {
-        const id = +req.params.id;
-        const updatePedidoDto = UpdatePedidoDto.create({ ...req.body, id});
+    new CreatePedido( this.pedidoRepository )
+      .execute( createPedidoDto! )
+      .then( pedido => res.json( pedido ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-        if (updatePedidoDto instanceof Error) {
-            return res.status(400).json({ error: updatePedidoDto.message });
-        }
 
-        const pedido = await prisma.pedido.findFirst({
-            where: { id }
-        });
+  };
 
-        if(!pedido) {
-            return res.status(404).json({ error: `El pedido con la id ${id} no ha sido encontrado.` });
-        }
+  public updatePedido = ( req: Request, res: Response ) => {
+    const id = +req.params.id;
+    const [ error, updatePedidoDto ] = UpdatePedidoDto.create( { ...req.body, id } );
+    if ( error ) return res.status( 400 ).json( { error } );
 
-        const updatedPedido = await prisma.pedido.update({
-            where: { id },
-            data: updatePedidoDto.values
-        });
+    new UpdatePedido( this.pedidoRepository )
+      .execute( updatePedidoDto! )
+      .then( pedido => res.json( pedido ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-        res.json(updatedPedido);
-    };
+  };
 
-    public deletePedido = async (req: Request, res: Response) => {
-        const id = +req.params.id;
-        const pedido = await prisma.pedido.findFirst({
-            where: { id },
-        });
 
-        if (!pedido) {
-            return res.status(404).json({ error: `El pedido con la id ${id} no ha sido encontrado.` });
-        }
+  public deletePedido = ( req: Request, res: Response ) => {
+    const id = +req.params.id;
 
-        const deleted = await prisma.pedido.delete({
-            where: { id },
-        });
+    new DeletePedido( this.pedidoRepository )
+      .execute( id )
+      .then( pedido => res.json( pedido ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-        if (deleted) {
-            res.json(deleted);
-        } else {
-            res.status(400).json({ error: `El pedido con la id ${id} no ha sido encontrado.` });
-        }
-    };
-}
+  };
+
+
+
+} 

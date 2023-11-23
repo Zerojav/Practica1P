@@ -1,77 +1,70 @@
 import { Request, Response } from 'express';
-import { prisma } from "../../data/postgres";
-import { CreateClienteDto, UpdateClienteDto } from "../../domain/dtos";
+import { CreateClienteDto, UpdateClienteDto } from '../../domain/dtos';
+import { CreateCliente, DeleteCliente, GetCliente, GetClientes, ClienteRepository, UpdateCliente } from '../../domain';
 
-export class ClienteController {
 
-    constructor(){}
-    public getCliente = async(req: Request, res: Response) => {
-        const cliente = await prisma.cliente.findMany();
-        return res.json(cliente);
-    };
+export class ClientesController {
 
-    // localhost:3000/cliente/1
-    public getClienteById = async(req: Request, res: Response) => {
-        const id = +req.params.id;
-        if (isNaN(id)) return res.status(400).json( {error: 'El argumento ID no es un número'});
-        const cliente = await prisma.cliente.findFirst({
-            where: { id }
-        });
+  //* DI
+  constructor(
+    private readonly clienteRepository: ClienteRepository,
+  ) { }
 
-        ( cliente )
-        ? res.json( cliente )
-        : res.status(400)
-    };
 
-    public createCliente = async (req: Request, res: Response) => {
-        const createClienteDto = CreateClienteDto.create(req.body);
-        if(createClienteDto instanceof Error){
+  public getClientes = ( req: Request, res: Response ) => {
 
-            return res.status(400).json({ error:createClienteDto.message});
-        }
+    new GetClientes( this.clienteRepository )
+      .execute()
+      .then( clientes => res.json( clientes ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-        const cliente = await prisma.cliente.create({
-            data: createClienteDto,
-        });
+  };
 
-        res.json(cliente);
-    };
+  public getClienteById = ( req: Request, res: Response ) => {
+    const id = +req.params.id;
 
-    public updateCliente = async (req: Request, res: Response) => {
-        const id =+ req.params.id;
-        const updateClienteDto = UpdateClienteDto.create({ ...req.body, id});
-        
-        if (updateClienteDto instanceof Error) {
-            return res.status(400).json({ error: updateClienteDto.message});
-        }
+    new GetCliente( this.clienteRepository )
+      .execute( id )
+      .then( cliente => res.json( cliente ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-        const cliente = await prisma.cliente.findFirst({
-            where: { id }
-        });
+  };
 
-        if(!cliente) {
-            return res.status(404).json({ error: `El cliente con la id ${id} no ha sido encontrado.`});
-        }
+  public createCliente = ( req: Request, res: Response ) => {
+    const [ error, createClienteDto ] = CreateClienteDto.create( req.body );
+    if ( error ) return res.status( 400 ).json( { error } );
 
-        const updatedCliente = await prisma.cliente.update({
-            where: { id },
-            data: updateClienteDto.values,
-        });
-        res.json(updatedCliente)
-    };
+    new CreateCliente( this.clienteRepository )
+      .execute( createClienteDto! )
+      .then( cliente => res.json( cliente ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-    public deleteCliente = async (req: Request, res: Response) => {
-        const id = +req.params.id;
-        const cliente = await prisma.cliente.findFirst({
-            where: {id}
-        });
-        
-        if ( !cliente ) return res.status(404).json({ error: `El cliente con el id ${ id } no ha sido encontrado`});
-        const deleted = await prisma.cliente.delete({
-            where: { id }
-        });
-        ( deleted )
-        ? res.json ( deleted )
-        :res.status(400).json({ error: `El cliente con el id ${ id } no ha sido encontrado` });
-    }
-}
+
+  };
+
+  public updateCliente = ( req: Request, res: Response ) => {
+    const id = +req.params.id;
+    const [ error, updateClienteDto ] = UpdateClienteDto.create( { ...req.body, id } );
+    if ( error ) return res.status( 400 ).json( { error } );
+
+    new UpdateCliente( this.clienteRepository )
+      .execute( updateClienteDto! )
+      .then( cliente => res.json( cliente ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
+
+  };
+
+
+  public deleteCliente = ( req: Request, res: Response ) => {
+    const id = +req.params.id;
+
+    new DeleteCliente( this.clienteRepository )
+      .execute( id )
+      .then( cliente => res.json( cliente ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
+
+  };
+
+
+
+} 

@@ -1,76 +1,70 @@
 import { Request, Response } from 'express';
-import { prisma } from "../../data/postgres";
-import { CreateRepartidorDto, UpdateRepartidorDto } from "../../domain/dtos";
+import { CreateRepartidorDto, UpdateRepartidorDto } from '../../domain/dtos';
+import { CreateRepartidor, DeleteRepartidor, GetRepartidor, GetRepartidors, RepartidorRepository, UpdateRepartidor } from '../../domain';
 
-export class RepartidorController {
 
-    constructor(){}
-    public getRepartidor = async(req: Request, res: Response) => {
-        const repartidor = await prisma.repartidor.findMany();
-        return res.json(repartidor);
-    };
+export class RepartidorsController {
 
-    // localhost:3000/repartidor/1
-    public getRepartidorById = async(req: Request, res: Response) => {
-        const id = +req.params.id;
-        if (isNaN(id)) return res.status(400).json( {error: 'El argumento ID no es un número'});
-        const repartidor = await prisma.repartidor.findFirst({
-            where: { id }
-        });
+  //* DI
+  constructor(
+    private readonly repartidorRepository: RepartidorRepository,
+  ) { }
 
-        ( repartidor )
-        ? res.json( repartidor )
-        : res.status(400)
-    };
 
-    public createRepartidor = async (req: Request, res: Response) => {
-        const createRepartidorDto = CreateRepartidorDto.create(req.body);
-        if(createRepartidorDto instanceof Error){
-            return res.status(400).json({ error:createRepartidorDto.message});
-        }
+  public getRepartidors = ( req: Request, res: Response ) => {
 
-        const repartidor = await prisma.repartidor.create({
-            data: createRepartidorDto,
-        });
+    new GetRepartidors( this.repartidorRepository )
+      .execute()
+      .then( repartidors => res.json( repartidors ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-        res.json(repartidor);
-    };
+  };
 
-    public updateRepartidor = async (req: Request, res: Response) => {
-        const id =+ req.params.id;
-        const updateRepartidorDto = UpdateRepartidorDto.create({ ...req.body, id});
-        
-        if (updateRepartidorDto instanceof Error) {
-            return res.status(400).json({ error: updateRepartidorDto.message});
-        }
+  public getRepartidorById = ( req: Request, res: Response ) => {
+    const id = +req.params.id;
 
-        const repartidor = await prisma.repartidor.findFirst({
-            where: { id }
-        });
+    new GetRepartidor( this.repartidorRepository )
+      .execute( id )
+      .then( repartidor => res.json( repartidor ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
 
-        if(!repartidor) {
-            return res.status(404).json({ error: `El repartidor con la id ${id} no ha sido encontrado.`});
-        }
+  };
 
-        const updatedRepartidor = await prisma.repartidor.update({
-            where: { id },
-            data: updateRepartidorDto.values,
-        });
-        res.json(updatedRepartidor)
-    };
+  public createRepartidor = ( req: Request, res: Response ) => {
+    const [ error, createRepartidorDto ] = CreateRepartidorDto.create( req.body );
+    if ( error ) return res.status( 400 ).json( { error } );
 
-    public deleteRepartidor = async (req: Request, res: Response) => {
-        const id = +req.params.id;
-        const repartidor = await prisma.repartidor.findFirst({
-            where: {id}
-        });
-        
-        if ( !repartidor ) return res.status(404).json({ error: `El repartidor con el id ${ id } no ha sido encontrado`});
-        const deleted = await prisma.repartidor.delete({
-            where: { id }
-        });
-        ( deleted )
-        ? res.json ( deleted )
-        :res.status(400).json({ error: `El repartidor con el id ${ id } no ha sido encontrado` });
-    }
-}
+    new CreateRepartidor( this.repartidorRepository )
+      .execute( createRepartidorDto! )
+      .then( repartidor => res.json( repartidor ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
+
+
+  };
+
+  public updateRepartidor = ( req: Request, res: Response ) => {
+    const id = +req.params.id;
+    const [ error, updateRepartidorDto ] = UpdateRepartidorDto.create( { ...req.body, id } );
+    if ( error ) return res.status( 400 ).json( { error } );
+
+    new UpdateRepartidor( this.repartidorRepository )
+      .execute( updateRepartidorDto! )
+      .then( crepartidor => res.json( crepartidor ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
+
+  };
+
+
+  public deleteRepartidor = ( req: Request, res: Response ) => {
+    const id = +req.params.id;
+
+    new DeleteRepartidor( this.repartidorRepository )
+      .execute( id )
+      .then( repartidor => res.json( repartidor ) )
+      .catch( error => res.status( 400 ).json( { error } ) );
+
+  };
+
+
+
+} 
